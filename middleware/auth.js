@@ -11,7 +11,7 @@ const verifyToken = (req, res, next) => {
     return res.status(401).send("Access Denied");
   }
 
-  let verifiedUser = jwt.verify(token, "joe");
+  let verifiedUser = jwt.verify(token, "kasa");
   if (!verifiedUser) {
     return res.status(401).send("Access Denied");
   }
@@ -21,11 +21,4 @@ const verifyToken = (req, res, next) => {
   next();
 };
 
-const checkRole = async (req, res, next) => {
-  if (req.user.isAdmin) {
-    return next();
-  }
-  return res.status(401).send("Access Denied, cause you're not Admin");
-};
-
-module.exports = { verifyToken, checkRole };
+module.exports = { verifyToken };
