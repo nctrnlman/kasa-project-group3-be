@@ -7,13 +7,17 @@ const { db, query } = require("./database");
 app.use(cors());
 
 app.use(express.json());
+const resultsPerPage = 3;
 
 // app.get("/", async (req, res) => {
 //   console.log("Start...");
 // });
-app.get("/user", async (req, res) => {
-  let fetchQuery = "SELECT * FROM user";
+app.get("/product", async (req, res) => {
+  let fetchQuery = "SELECT * FROM product";
   db.query(fetchQuery, (err, result) => {
+   
+    console.log(page)
+
     return res.status(200).send(result);
   });
 });
