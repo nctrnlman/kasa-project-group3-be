@@ -1,16 +1,41 @@
-const { db } = require("../database");
+const { db,query} = require("../database");
 
 const paginatedResults = (model) => {
   return async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort;
+    const filter= req.query.filter;
 
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
 
     const results = {};
+   
+    let orderBy = "";
 
-    const fetchQuery = `SELECT * FROM ${model} LIMIT ${limit} OFFSET ${startIndex}`;
+    if (sort === "priceHighLow") {
+      orderBy = "price DESC";
+    } else if (sort === "priceLowHigh") {
+      orderBy = "price ASC";
+    } else if (sort === "nameAtoZ") {
+      orderBy = "name ASC";
+    } else if (sort === "nameZtoA") {
+      orderBy = "name DESC";
+    } else if (sort) {
+      return res.status(400).send("Invalid sort parameter");
+    }
+  
+    
+    let fetchQuery=""
+
+    if(filter){
+       fetchQuery = `SELECT * FROM ${model} WHERE id_category=${filter} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${startIndex} `;
+    } else{
+       fetchQuery = `SELECT * FROM ${model}   ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${startIndex} `;
+
+    }
+
 
     db.query(fetchQuery, (err, result) => {
       if (err) {
@@ -24,7 +49,7 @@ const paginatedResults = (model) => {
 
       const countQuery = `SELECT COUNT(*) as count FROM ${model}`;
 
-      db.query(countQuery, (err, result) => {
+      db.query(countQuery, async(err, result) => {
         if (err) {
           console.log(err);
           return res
@@ -48,7 +73,15 @@ const paginatedResults = (model) => {
             limit: limit,
           };
         }
-
+        try {
+          const categories = await query("SELECT DISTINCT id_category FROM product");
+          results.categories = categories.map((category) => category.id_category);
+          res.paginatedResults = results;
+          next();
+        } catch (err) {
+          console.error(err);
+          return res.status(500).json({ error: "An error occurred while fetching categories" });
+        }
         res.paginatedResults = results;
         next();
       });
@@ -58,10 +91,5 @@ const paginatedResults = (model) => {
 
 module.exports = {
   paginatedProducts: paginatedResults("product"),
-  showUsers: async (req, res) => {
-    let fetchQuery = "SELECT * FROM product";
-    db.query(fetchQuery, (err, result) => {
-      return res.status(200).send(result);
-    });
-  },
+
 };
