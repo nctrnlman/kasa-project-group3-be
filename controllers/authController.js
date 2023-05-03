@@ -29,7 +29,6 @@ module.exports = {
 
       let payload = { id: addUser.insertId };
       const token = jwt.sign(payload, "kasa", { expiresIn: "4h" });
-      console.log(token);
 
       let mail = {
         from: "Admin <rhazesnote@gmail.com>",
@@ -54,9 +53,11 @@ module.exports = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
+
       const checkEmail = await query(
         `SELECT * FROM user WHERE email = ${db.escape(email)}`
       );
+
       if (checkEmail.length == 0) {
         return res
           .status(200)
@@ -67,11 +68,13 @@ module.exports = {
         password,
         checkEmail[0].password
       );
+
       if (!validPassword) {
         res
           .status(200)
           .send({ message: "Password is incorrect", success: false });
       }
+
       let payload = {
         id: checkEmail[0].id_user,
         isActive: checkEmail[0].isActive,
@@ -91,7 +94,6 @@ module.exports = {
         },
         success: true,
       });
-      console.log(token);
     } catch (e) {
       res.status(e.status || 500).send(e);
     }
@@ -99,9 +101,11 @@ module.exports = {
   verify: async (req, res) => {
     try {
       const id = req.user.id;
+
       let updateIsActivity = await query(
         `UPDATE user SET isActive = true where id_user = ${db.escape(id)};`
       );
+
       res.status(200).send({ success: true, message: "account is verified" });
     } catch (e) {
       res.status(e.status || 500).send(e);
@@ -109,10 +113,10 @@ module.exports = {
   },
   checkLogin: async (req, res) => {
     try {
-      // const id = req.user.id;
       const users = await query(
         `SELECT * FROM user WHERE id_user = ${db.escape(req.user.id)}`
       );
+
       return res.status(200).send({
         data: {
           isActive: users[0].isActive,
