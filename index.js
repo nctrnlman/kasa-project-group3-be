@@ -3,11 +3,17 @@ const PORT = 8001;
 const app = express();
 const cors = require("cors");
 const { db, query } = require("./database");
-const { authRoutes } = require("./routes");
+const {
+  authRoutes,
+  productRoutes,
+  categoryRoutes,
+  reportRoutes,
+} = require("./routes");
 
 app.use(cors());
 
 app.use(express.json());
+app.use(express.static("public"));
 
 // app.get("/", async (req, res) => {
 //   console.log("Start...");
@@ -20,6 +26,9 @@ app.use(express.json());
 // });
 
 app.use("/auth", authRoutes);
+app.use("/product", productRoutes);
+app.use("/category", categoryRoutes);
+app.use("/report", reportRoutes);
 
 app.listen(PORT, () => {
   console.log("Server is running on port: " + PORT);
